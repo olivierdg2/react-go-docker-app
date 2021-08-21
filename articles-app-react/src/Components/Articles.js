@@ -26,7 +26,30 @@ function Articles() {
           }
         )
     }, [])
-  
+
+    function deleteArticle(id) {
+      // Simple DELETE request fetch
+      const requestOptions = {
+          method: 'DELETE'
+      };
+      fetch("http://localhost:10000/article/" + id, requestOptions)
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setIsLoaded(true);
+          setItems(result);
+          console.log(result)
+        },
+        // Remarque : il faut gérer les erreurs ici plutôt que dans
+        // un bloc catch() afin que nous n’avalions pas les exceptions
+        // dues à de véritables bugs dans les composants.
+        (error) => {
+          setIsLoaded(true);
+          setError(error);
+        }
+      )
+    }
+
     if (error) {
       return <div>Erreur : {error.message}</div>;
     } else if (!isLoaded) {
@@ -50,7 +73,7 @@ function Articles() {
                     <td>{item.Desc}</td>
                     <td>{item.Content}</td>
                     <td><input type="button" className="btn btn-warning" value="Modifier"/></td>
-                    <td><input type="button" className="btn btn-danger" value="Supprimer"/></td>
+                    <td><input type="button" className="btn btn-danger" value="Supprimer" onClick={() => deleteArticle(item.Id)}/></td>
             </tr>
           ))}
             </tbody>

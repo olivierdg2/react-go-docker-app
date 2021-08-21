@@ -36,6 +36,27 @@ func (a Article) toString() string {
 	return s
 }
 
+func CORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// Set headers
+		w.Header().Set("Access-Control-Allow-Headers:", "*")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "*")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		fmt.Println("ok")
+
+		// Next
+		next.ServeHTTP(w, r)
+		return
+	})
+}
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the HomePage!")
 	fmt.Println("Endpoint Hit: homePage")
@@ -43,11 +64,12 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
+	myRouter.Use(CORS)
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/articles", returnAllArticles)
-	myRouter.HandleFunc("/article", createNewArticle).Methods("POST")
-	myRouter.HandleFunc("/article/{id}", deleteArticle).Methods("DELETE")
-	myRouter.HandleFunc("/article/{id}", putArticle).Methods("PUT")
+	myRouter.HandleFunc("/article", createNewArticle).Methods("POST", "OPTIONS")
+	myRouter.HandleFunc("/article/{id}", deleteArticle).Methods("DELETE", "OPTIONS")
+	myRouter.HandleFunc("/article/{id}", putArticle).Methods("PUT", "OPTIONS")
 	myRouter.HandleFunc("/article/{id}", returnSingleArticle)
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
@@ -64,8 +86,6 @@ func returnAllArticles(w http.ResponseWriter, r *http.Request) {
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(Articles)
 }
 
@@ -115,8 +135,6 @@ func createNewArticle(w http.ResponseWriter, r *http.Request) {
 	if err3 != nil {
 		fmt.Printf("Error: %v", err2)
 	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(string(article.Kvs[0].Value))
 }
 
@@ -130,7 +148,18 @@ func deleteArticle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	fmt.Fprintf(w, "Article deleted")
+	// Retrieve all articles
+	articles, err2 := kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
+	if err2 != nil {
+		fmt.Printf("Error: %v", err2)
+	}
+	var Articles []Article
+	for _, article := range articles.Kvs {
+		var a Article
+		json.Unmarshal(article.Value, &a)
+		Articles = append(Articles, a)
+	}
+	json.NewEncoder(w).Encode(Articles)
 
 }
 
