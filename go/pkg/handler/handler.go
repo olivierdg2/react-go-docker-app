@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 	"go.etcd.io/etcd/clientv3"
@@ -17,18 +15,18 @@ import (
 var cli clientv3.Client
 var kv clientv3.KV
 
-func homePage(w http.ResponseWriter, r *http.Request) {
+func HomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the HomePage!")
 	fmt.Println("Endpoint Hit: homePage")
 }
 
-func returnAllArticles(w http.ResponseWriter, r *http.Request) {
+func ReturnAllArticles(w http.ResponseWriter, r *http.Request) {
 	// Retrieve all articles
 	articles, err := kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	var Articles []Article
+	var Articles Article
 	for _, article := range articles.Kvs {
 		var a Article
 		json.Unmarshal(article.Value, &a)
@@ -37,7 +35,7 @@ func returnAllArticles(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(Articles)
 }
 
-func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
+func ReturnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	//Get url variables then get the id
 	vars := mux.Vars(r)
 	key := vars["id"]
@@ -49,7 +47,7 @@ func returnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(string(article.Kvs[0].Value))
 }
 
-func createNewArticle(w http.ResponseWriter, r *http.Request) {
+func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 	// get the body of our POST request
 	// unmarshal this into a new Article struct
 	// append this to our Articles array.
@@ -86,7 +84,7 @@ func createNewArticle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(string(article.Kvs[0].Value))
 }
 
-func deleteArticle(w http.ResponseWriter, r *http.Request) {
+func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	// once again, we will need to parse the path parameters
 	vars := mux.Vars(r)
 	// we will need to extract the `id` of the article we
@@ -111,7 +109,7 @@ func deleteArticle(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func putArticle(w http.ResponseWriter, r *http.Request) {
+func PutArticle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
