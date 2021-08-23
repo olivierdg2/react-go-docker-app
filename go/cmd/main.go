@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"https://github.com/olivierdg2/react-go-docker-app/go/pkg/cmd/server"
+	"github.com/olivierdg2/react-go-docker-app/go/pkg/cmd/server"
 	"go.etcd.io/etcd/clientv3"
 )
 
