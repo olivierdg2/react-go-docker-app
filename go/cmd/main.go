@@ -13,7 +13,7 @@ func main() {
 		Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
 		DialTimeout: 5 * time.Second,
 	})
-	server.kv = clientv3.NewKV(cli)
+	server.Kv = clientv3.NewKV(cli)
 	if err != nil {
 		fmt.Printf("%v", err)
 	}
