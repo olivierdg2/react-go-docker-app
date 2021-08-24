@@ -9,12 +9,12 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	types "github.com/olivierdg2/react-go-docker-app/go/pkg/types/articles"
+	articles "github.com/olivierdg2/react-go-docker-app/go/pkg/types"
 	"go.etcd.io/etcd/clientv3"
 )
 
 var cli clientv3.Client
-var kv clientv3.KV
+var Kv clientv3.KV
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the HomePage!")
@@ -23,13 +23,13 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 func ReturnAllArticles(w http.ResponseWriter, r *http.Request) {
 	// Retrieve all articles
-	articles, err := kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
+	articles, err := Kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	var Articles types.Article
+	var Articles articles.Article
 	for _, article := range articles.Kvs {
-		var a types.Article
+		var a articles.Article
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
@@ -41,7 +41,7 @@ func ReturnSingleArticle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["id"]
 	//Retrieve the article from the given id
-	article, err := kv.Get(context.TODO(), "/articles/"+key)
+	article, err := Kv.Get(context.TODO(), "/articles/"+key)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -53,9 +53,9 @@ func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 	// unmarshal this into a new Article struct
 	// append this to our Articles array.
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var data types.new_Article
+	var data articles.new_Article
 	json.Unmarshal(reqBody, &data)
-	articles, err := kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
+	articles, err := Kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -64,21 +64,21 @@ func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 		id = 0
 	} else {
 		last_data := articles.Kvs[len(articles.Kvs)-1].Value
-		var last types.Article
+		var last articles.Article
 		json.Unmarshal(last_data, &last)
 
 		id, _ = strconv.Atoi(last.Id)
 	}
-	var new types.Article
+	var new articles.Article
 	new.Id = strconv.Itoa(id + 1)
 	new.Title = data.Title
 	new.Desc = data.Desc
 	new.Content = data.Content
-	_, err2 := kv.Put(context.TODO(), "/articles/"+new.Id, new.toString())
+	_, err2 := Kv.Put(context.TODO(), "/articles/"+new.Id, new.toString())
 	if err2 != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	article, err3 := kv.Get(context.TODO(), "/articles/"+new.Id)
+	article, err3 := Kv.Get(context.TODO(), "/articles/"+new.Id)
 	if err3 != nil {
 		fmt.Printf("Error: %v", err2)
 	}
@@ -91,18 +91,18 @@ func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	// we will need to extract the `id` of the article we
 	// wish to delete
 	id := vars["id"]
-	_, err := kv.Delete(context.TODO(), "/articles/"+id)
+	_, err := Kv.Delete(context.TODO(), "/articles/"+id)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
 	// Retrieve all articles
-	articles, err2 := kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
+	articles, err2 := Kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
 	if err2 != nil {
 		fmt.Printf("Error: %v", err2)
 	}
-	var Articles []types.Article
+	var Articles []articles.Article
 	for _, article := range articles.Kvs {
-		var a types.Article
+		var a articles.Article
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
@@ -115,9 +115,9 @@ func PutArticle(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var modified_article types.Article
+	var modified_article articles.Article
 	json.Unmarshal(reqBody, &modified_article)
-	_, err := kv.Put(context.TODO(), "/articles/"+id, modified_article.toString())
+	_, err := Kv.Put(context.TODO(), "/articles/"+id, modified_article.toString())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}

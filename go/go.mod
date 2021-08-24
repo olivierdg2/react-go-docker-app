@@ -1,4 +1,4 @@
-module github.com/olivierdg2/react-go-docker-app/go
+module articles
 
 go 1.17
 
@@ -10,7 +10,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
 	go.etcd.io/etcd v3.3.25+incompatible // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
