@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	types "github.com/olivierdg2/react-go-docker-app/go/pkg/types/articles"
 	"go.etcd.io/etcd/clientv3"
 )
 
@@ -26,9 +27,9 @@ func ReturnAllArticles(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	var Articles Article
+	var Articles types.Article
 	for _, article := range articles.Kvs {
-		var a Article
+		var a types.Article
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
@@ -52,7 +53,7 @@ func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 	// unmarshal this into a new Article struct
 	// append this to our Articles array.
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var data new_Article
+	var data types.new_Article
 	json.Unmarshal(reqBody, &data)
 	articles, err := kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
 	if err != nil {
@@ -63,12 +64,12 @@ func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 		id = 0
 	} else {
 		last_data := articles.Kvs[len(articles.Kvs)-1].Value
-		var last Article
+		var last types.Article
 		json.Unmarshal(last_data, &last)
 
 		id, _ = strconv.Atoi(last.Id)
 	}
-	var new Article
+	var new types.Article
 	new.Id = strconv.Itoa(id + 1)
 	new.Title = data.Title
 	new.Desc = data.Desc
@@ -99,9 +100,9 @@ func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	if err2 != nil {
 		fmt.Printf("Error: %v", err2)
 	}
-	var Articles []Article
+	var Articles []types.Article
 	for _, article := range articles.Kvs {
-		var a Article
+		var a types.Article
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
@@ -114,7 +115,7 @@ func PutArticle(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var modified_article Article
+	var modified_article types.Article
 	json.Unmarshal(reqBody, &modified_article)
 	_, err := kv.Put(context.TODO(), "/articles/"+id, modified_article.toString())
 	if err != nil {
