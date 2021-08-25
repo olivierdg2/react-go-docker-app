@@ -9,7 +9,7 @@ import (
 	handler "github.com/olivierdg2/react-go-docker-app/go/pkg/handler"
 )
 
-var Kv = handler.Kv
+var Cli = handler.Cli
 
 func HandleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)

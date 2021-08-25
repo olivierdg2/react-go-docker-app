@@ -7,14 +7,18 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
-	articles "github.com/olivierdg2/react-go-docker-app/go/pkg/types"
+	types "github.com/olivierdg2/react-go-docker-app/go/pkg/types"
 	"go.etcd.io/etcd/clientv3"
 )
 
-var cli clientv3.Client
-var Kv clientv3.KV
+var Cli, _ = clientv3.New(clientv3.Config{
+	Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
+	DialTimeout: 5 * time.Second,
+})
+var Kv = clientv3.NewKV(Cli)
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the HomePage!")
@@ -27,9 +31,9 @@ func ReturnAllArticles(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	var Articles articles.Article
+	var Articles []types.Article
 	for _, article := range articles.Kvs {
-		var a articles.Article
+		var a types.Article
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
@@ -53,7 +57,7 @@ func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 	// unmarshal this into a new Article struct
 	// append this to our Articles array.
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var data articles.new_Article
+	var data types.New_Article
 	json.Unmarshal(reqBody, &data)
 	articles, err := Kv.Get(context.TODO(), "/articles", clientv3.WithPrefix())
 	if err != nil {
@@ -64,17 +68,17 @@ func CreateNewArticle(w http.ResponseWriter, r *http.Request) {
 		id = 0
 	} else {
 		last_data := articles.Kvs[len(articles.Kvs)-1].Value
-		var last articles.Article
+		var last types.Article
 		json.Unmarshal(last_data, &last)
 
 		id, _ = strconv.Atoi(last.Id)
 	}
-	var new articles.Article
+	var new types.Article
 	new.Id = strconv.Itoa(id + 1)
 	new.Title = data.Title
 	new.Desc = data.Desc
 	new.Content = data.Content
-	_, err2 := Kv.Put(context.TODO(), "/articles/"+new.Id, new.toString())
+	_, err2 := Kv.Put(context.TODO(), "/articles/"+new.Id, new.ToString())
 	if err2 != nil {
 		fmt.Printf("Error: %v", err)
 	}
@@ -100,9 +104,9 @@ func DeleteArticle(w http.ResponseWriter, r *http.Request) {
 	if err2 != nil {
 		fmt.Printf("Error: %v", err2)
 	}
-	var Articles []articles.Article
+	var Articles []types.Article
 	for _, article := range articles.Kvs {
-		var a articles.Article
+		var a types.Article
 		json.Unmarshal(article.Value, &a)
 		Articles = append(Articles, a)
 	}
@@ -115,9 +119,9 @@ func PutArticle(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var modified_article articles.Article
+	var modified_article types.Article
 	json.Unmarshal(reqBody, &modified_article)
-	_, err := Kv.Put(context.TODO(), "/articles/"+id, modified_article.toString())
+	_, err := Kv.Put(context.TODO(), "/articles/"+id, modified_article.ToString())
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
