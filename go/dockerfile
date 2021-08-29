@@ -1,0 +1,10 @@
+FROM golang:alpine
+COPY cmd/main.go articles/cmd/main.go
+COPY internal articles/internal
+COPY pkg articles/pkg
+COPY go.mod articles
+COPY go.sum articles
+RUN cd articles && go mod download
+RUN cd articles && go build cmd/main.go
+CMD ["articles/main"]
+

@@ -15,7 +15,7 @@ import (
 )
 
 var Cli, _ = clientv3.New(clientv3.Config{
-	Endpoints:   []string{"localhost:2379", "localhost:22379", "localhost:32379"},
+	Endpoints:   []string{"http://etcd:2379", "http://etcd:22379", "http://etcd:32379"},
 	DialTimeout: 5 * time.Second,
 })
 var Kv = clientv3.NewKV(Cli)

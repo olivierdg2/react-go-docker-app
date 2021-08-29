@@ -1,0 +1,31 @@
+version: "3.9"
+
+services: 
+  server:
+    build:
+      context: ../go
+      dockerfile: dockerfile
+    ports:
+      - 10000:10000
+  etcd:
+    image: "bitnami/etcd"
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - DATA_DIR=etcd-data
+    ports:
+      - 2379:2379
+      - 2380:2380
+    volumes:
+      - etcd-data:/opt/bitnami/etcd/etcd-data
+  react:
+    build:
+      context: ../articles-app-react
+      dockerfile: dockerfile
+    volumes:
+      - ".:/app"
+      - "/app/node_modules"
+    ports:
+      - 3000:3000
+volumes: 
+  etcd-data:
