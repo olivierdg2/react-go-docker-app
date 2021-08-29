@@ -7,6 +7,7 @@ services:
       dockerfile: dockerfile
     ports:
       - 10000:10000
+    image: olivierdg1/articles:server
   etcd:
     image: "bitnami/etcd"
     environment:
@@ -22,10 +23,8 @@ services:
     build:
       context: ../articles-app-react
       dockerfile: dockerfile
-    volumes:
-      - ".:/app"
-      - "/app/node_modules"
     ports:
       - 3000:3000
+    image: olivierdg1/articles:react
 volumes: 
   etcd-data:

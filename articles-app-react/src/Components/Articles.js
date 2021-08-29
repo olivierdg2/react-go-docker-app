@@ -66,6 +66,7 @@ function Articles() {
                     <th></th>
                 </tr>
             </thead>
+            {items!=null?
             <tbody>
             {items.map(item => (
             <tr key={item.Id}>
@@ -76,9 +77,8 @@ function Articles() {
                     <td><input type="button" className="btn btn-danger" value="Supprimer" onClick={() => deleteArticle(item.Id)}/></td>
             </tr>
           ))}
-            </tbody>
+            </tbody>:<tr></tr>}
         </table>
-
       );
     }
   }
