@@ -15,7 +15,7 @@ function AddArticle() {
             body: JSON.stringify({ Title: title, Desc:desc, Content:content}),
             mode: "no-cors"
         };
-        fetch('http://localhost:10000/article', requestOptions)
+        fetch('http://10.1.0.28:10000/article', requestOptions)
         .then(function(response) {
             history.push("/articles");
         });
