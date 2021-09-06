@@ -9,7 +9,7 @@ function Articles() {
     // que useEffect ne s’exécutera qu’une fois, un peu comme
     // componentDidMount()
     useEffect(() => {
-      fetch("http://10.1.0.28:10000/articles")
+      fetch("http://localhost:10000/articles")
         .then(res => res.json())
         .then(
           (result) => {
@@ -32,7 +32,7 @@ function Articles() {
       const requestOptions = {
           method: 'DELETE'
       };
-      fetch("http://10.1.0.28:10000/article/" + id, requestOptions)
+      fetch("http://localhost:10000/article/" + id, requestOptions)
       .then(res => res.json())
       .then(
         (result) => {
